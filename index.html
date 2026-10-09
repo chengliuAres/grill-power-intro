@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>grill-power 项目介绍 · 让 AI 写代码别再「瞎改」</title>
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('gp-theme');
+    if(t !== 'light' && t !== 'dark'){ t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'; }
+    document.documentElement.setAttribute('data-theme', t);
+  }catch(e){}
+})();
+</script>
+<style>
+:root{
+  /* 字体 */
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  --font-mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace;
+
+  /* 字号行高 */
+  --fs-h1:32px; --lh-h1:1.3;
+  --fs-h2:24px; --lh-h2:1.35;
+  --fs-h3:18px; --lh-h3:1.4;
+  --fs-body:16px; --lh-body:1.75;
+  --fs-small:14px; --lh-small:1.6;
+  --fs-aux:13px; --lh-aux:1.6;
+
+  /* 中性色 */
+  --bg:#F8FAFC;
+  --card:#FFFFFF;
+  --border:#E2E8F0;
+  --border-strong:#CBD5E1;
+  --text:#0F172A;
+  --text-body:#334155;
+  --text-aux:#64748B;
+  --link:#1D4ED8;
+  --link-hover:#1E40AF;
+  --zebra:#FAFBFC;
+
+  /* 三档品牌色 */
+  --lite:#16A34A; --lite-text:#15803D; --lite-tint:#F0FDF4; --lite-border:#BBF7D0;
+  --std:#2563EB;  --std-text:#1D4ED8;  --std-tint:#EFF6FF;  --std-border:#BFDBFE;
+  --full:#7C3AED; --full-text:#6D28D9; --full-tint:#F5F3FF; --full-border:#DDD6FE;
+  --gate:#D97706; --gate-text:#B45309; --gate-tint:#FFFBEB; --gate-border:#FDE68A;
+  --warn:#DC2626; --warn-text:#B91C1C; --warn-tint:#FEF2F2; --warn-border:#FECACA;
+
+  /* 间距 8pt */
+  --s1:4px; --s2:8px; --s4:16px; --s6:24px; --s8:32px; --s12:48px; --s16:64px; --s24:96px;
+
+  --container:1184px;
+  --prose:768px;
+  --shadow:0 1px 2px rgba(15,23,42,.04),0 1px 3px rgba(15,23,42,.06);
+
+  /* 判定节点（反色胶囊） */
+  --judge-bg1:#0F172A; --judge-bg2:#1E3A8A; --judge-fg:#FFFFFF; --judge-fg-aux:#CBD5E1;
+
+  /* 详情气泡（反色浮层：亮主题=深底、暗主题=浅底，与页面背景彻底分离） */
+  --bubble-bg:#0F172A;
+  --bubble-head-bg:#1E293B;
+  --bubble-border:#334155;
+  --bubble-title:#FFFFFF;
+  --bubble-text:#CBD5E1;
+  --bubble-shadow:0 0 0 1px rgba(15,23,42,.25),0 22px 50px rgba(15,23,42,.40),0 6px 18px rgba(15,23,42,.30);
+}
+
+/* ===== Dark 主题变量覆盖 ===== */
+html[data-theme="dark"]{
+  /* 中性色 */
+  --bg:#0B0F17;
+  --card:#131A26;
+  --border:#26303F;
+  --border-strong:#354158;
+  --text:#EEF2F8;
+  --text-body:#C7D0DE;
+  --text-aux:#8B96A8;
+  --link:#5B8DEF;
+  --link-hover:#7FA6F5;
+  --zebra:#0F1621;
+
+  /* 品牌色：暗底提亮，保证对比 */
+  --lite:#22C55E; --lite-text:#4ADE80; --lite-tint:#0C2116; --lite-border:#14532D;
+  --std:#3B82F6;  --std-text:#60A5FA;  --std-tint:#0C1830;  --std-border:#1E3A8A;
+  --full:#A78BFA; --full-text:#A78BFA; --full-tint:#170F2E; --full-border:#4C1D95;
+  --gate:#F59E0B; --gate-text:#FBBF24; --gate-tint:#241A05; --gate-border:#78350F;
+  --warn:#F87171; --warn-text:#FCA5A5; --warn-tint:#2A1114; --warn-border:#7F1D1D;
+
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 1px 3px rgba(0,0,0,.5);
+
+  /* 判定节点：暗底用亮色渐变仍保白字 */
+  --judge-bg1:#1E3A8A; --judge-bg2:#4C1D95; --judge-fg:#FFFFFF; --judge-fg-aux:#C7D0DE;
+
+  /* 详情气泡：暗主题=浅色反相浮层，与深底彻底分离 */
+  --bubble-bg:#F1F5F9;
+  --bubble-head-bg:#FFFFFF;
+  --bubble-border:#94A3B8;
+  --bubble-title:#0F172A;
+  --bubble-text:#334155;
+  --bubble-shadow:0 0 0 1px rgba(148,163,184,.5),0 22px 50px rgba(0,0,0,.70),0 6px 18px rgba(0,0,0,.5);
+}
+
+/* ===== 字号档位（小 / 中 / 大） ===== */
+html[data-fontsize="small"]{
+  --fs-h1:28px; --fs-h2:21px; --fs-h3:16px;
+  --fs-body:14px; --fs-small:13px; --fs-aux:12px;
+}
+html[data-fontsize="large"]{
+  --fs-h1:36px; --fs-h2:28px; --fs-h3:21px;
+  --fs-body:18px; --fs-small:16px; --fs-aux:15px;
+}
+/* 中 = 默认值（:root 内的原始字号，无需覆盖） */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--text-body);
+  font-family:var(--font-sans); font-size:var(--fs-body); line-height:var(--lh-body);
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  transition:background-color .35s ease, color .35s ease;
+}
+.card,.lane .step,.degrade-row,.dim,.d-step,.mat th,.mat td,.tier th,.tier td,.chip,.rule .num,.wall,.slot,.xp th,.xp td{
+  transition:background-color .3s ease, color .3s ease, border-color .3s ease;
+}
+
+/* ===== 顶部工具栏：字号 + 深浅色切换 ===== */
+.top-toolbar{
+  position:fixed; top:20px; right:20px; z-index:1000;
+  display:flex; align-items:center; gap:var(--s2);
+}
+.fontsz{
+  display:flex; align-items:center; gap:2px;
+  padding:3px; border-radius:999px;
+  border:1px solid var(--border); background:var(--card); box-shadow:var(--shadow);
+  transition:background-color .3s ease, border-color .3s ease;
+}
+.fsz-btn{
+  width:34px; height:34px; border:none; border-radius:999px;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent; color:var(--text-aux); cursor:pointer;
+  font-weight:700; line-height:1;
+  transition:background-color .2s ease, color .2s ease;
+}
+.fsz-btn[data-fs="small"]{font-size:11px;}
+.fsz-btn[data-fs="medium"]{font-size:14px;}
+.fsz-btn[data-fs="large"]{font-size:17px;}
+.fsz-btn:hover{color:var(--text); background:var(--bg);}
+.fsz-btn.is-active{color:#fff; background:var(--std);}
+html[data-theme="dark"] .fsz-btn.is-active{color:#fff; background:var(--std);}
+
+.theme-toggle{
+  width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border); background:var(--card); color:var(--text-aux);
+  cursor:pointer; box-shadow:var(--shadow);
+  transition:background-color .3s ease, color .3s ease, border-color .3s ease, transform .2s ease;
+}
+.theme-toggle:hover{color:var(--text); transform:scale(1.08);}
+.theme-toggle:active{transform:scale(.94);}
+.theme-toggle .icon-sun{display:none;}
+.theme-toggle .icon-moon{display:block;}
+/* dark 态：显示太阳（提示点击切回亮） */
+html[data-theme="dark"] .theme-toggle{color:var(--gate-text);}
+html[data-theme="dark"] .theme-toggle .icon-sun{display:block;}
+html[data-theme="dark"] .theme-toggle .icon-moon{display:none;}
+.theme-toggle svg{transition:transform .4s cubic-bezier(.22,1,.36,1);}
+.theme-toggle:hover svg{transform:rotate(30deg);}
+code,kbd,samp,.mono{font-family:var(--font-mono); font-size:calc(var(--fs-small) - 1px); color:var(--text);}
+.wrap{max-width:var(--container); margin:0 auto; padding:0 var(--s8);}
+.wrap.hero{padding-top:var(--s16); padding-bottom:var(--s12);}
+
+/* ===== Hero ===== */
+.hero{text-align:center;}
+.hero .kicker{display:inline-flex; align-items:center; gap:var(--s2);
+  font-family:var(--font-mono); font-size:var(--fs-aux); color:var(--std-text);
+  background:var(--std-tint); border:1px solid var(--std-border); border-radius:999px;
+  padding:2px 12px; margin-bottom:var(--s4);}
+.hero h1{font-size:var(--fs-h1); line-height:var(--lh-h1); font-weight:700;
+  color:var(--text); margin:0 0 var(--s4); letter-spacing:.2px;}
+.hero .sub{font-size:var(--fs-body); color:var(--text-aux); max-width:720px;
+  margin:0 auto; line-height:var(--lh-body);}
+.hero .tags{margin-top:var(--s6); display:flex; flex-wrap:wrap; justify-content:center; gap:var(--s2);}
+.chip{display:inline-flex; align-items:center; gap:6px; font-size:var(--fs-aux);
+  line-height:1.4; padding:4px 10px; border-radius:999px; border:1px solid var(--border); color:var(--text-body);
+  background:var(--card);}
+.chip .dot{width:8px; height:8px; border-radius:50%; flex:none;}
+.chip.lite{border-color:var(--lite-border); color:var(--lite-text); background:var(--lite-tint);}
+.chip.std{border-color:var(--std-border); color:var(--std-text); background:var(--std-tint);}
+.chip.full{border-color:var(--full-border); color:var(--full-text); background:var(--full-tint);}
+
+/* ===== Section / 标题 ===== */
+section{margin-top:var(--s16);}
+.sec-head{margin:0 auto var(--s6); max-width:var(--prose);}
+.sec-head h2{font-size:var(--fs-h2); line-height:var(--lh-h2); font-weight:600; color:var(--text); margin:0;}
+.sec-head .no{font-family:var(--font-mono); font-size:var(--fs-aux); color:var(--text-aux);
+  display:block; margin-bottom:var(--s2);}
+.sec-head p{color:var(--text-aux); font-size:var(--fs-small); margin:var(--s2) 0 0; line-height:var(--lh-small);}
+
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:var(--s6); box-shadow:var(--shadow);}
+.card h3{position:relative; font-size:var(--fs-h3); line-height:var(--lh-h3); font-weight:700; color:var(--text);
+  margin:0 0 var(--s4); padding-left:14px;}
+.card h3::before{content:""; position:absolute; left:0; top:4px; bottom:4px; width:4px;
+  border-radius:2px; background:linear-gradient(180deg,var(--std),var(--full));}
+.card .desc{color:var(--text-aux); font-size:var(--fs-small); line-height:var(--lh-small); margin:0;}
+
+/* ===== 01 背景：翻车对比 ===== */
+.versus{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s6);}
+.vs-card{border:1px solid var(--border); border-radius:12px; padding:var(--s6); background:var(--card);}
+.vs-card.over{border-top:4px solid var(--warn);}
+.vs-card.under{border-top:4px solid var(--gate);}
+.vs-card .vs-tag{display:inline-block; font-size:12px; font-weight:600; padding:2px 10px; border-radius:999px; margin-bottom:var(--s2);}
+.vs-card.over .vs-tag{background:var(--warn-tint); color:var(--warn-text);}
+.vs-card.under .vs-tag{background:var(--gate-tint); color:var(--gate-text);}
+.vs-card h4{font-size:var(--fs-h3); font-weight:600; color:var(--text); margin:0 0 var(--s2); line-height:var(--lh-h3);}
+.vs-card p{font-size:var(--fs-small); line-height:var(--lh-small); color:var(--text-body); margin:0;}
+.vs-card p + p{margin-top:var(--s2);}
+.vs-card .vs-cost{margin-top:var(--s4); padding-top:var(--s2); border-top:1px dashed var(--border);
+  font-size:var(--fs-aux); color:var(--text-aux); line-height:var(--lh-aux);}
+.vs-card .vs-cost b{color:var(--warn-text); font-weight:600;}
+
+/* 三堵墙 */
+.walls{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--s6); margin-top:var(--s6);}
+.wall{border:1px solid var(--border); border-radius:12px; padding:var(--s6); background:var(--card);}
+.wall .w-no{font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--warn-text);
+  background:var(--warn-tint); border:1px solid var(--warn-border); border-radius:6px; padding:1px 8px;}
+.wall h4{font-size:var(--fs-h3); font-weight:600; color:var(--text); margin:var(--s2) 0 var(--s2); line-height:var(--lh-h3);}
+.wall p{font-size:var(--fs-small); line-height:var(--lh-small); color:var(--text-body); margin:0;}
+.wall .w-punch{margin-top:var(--s2); font-size:var(--fs-aux); color:var(--warn-text); font-weight:600;}
+
+/* 根因横幅 */
+.rootcause{margin-top:var(--s6); border-radius:12px; padding:var(--s6) var(--s8); text-align:center;
+  background:linear-gradient(135deg,var(--judge-bg1),var(--judge-bg2)); color:var(--judge-fg);}
+.rootcause .rc-t{font-size:var(--fs-h3); font-weight:600; line-height:var(--lh-h3);}
+.rootcause .rc-s{font-size:var(--fs-small); color:var(--judge-fg-aux); margin-top:var(--s2); line-height:var(--lh-small);}
+
+/* 三家对照融合条 */
+.fusion{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:var(--s2);
+  margin-top:var(--s4); padding:var(--s4) var(--s6);
+  border:1px dashed var(--border-strong); border-radius:12px; background:var(--zebra);}
+.fusion .f-src{font-size:var(--fs-aux); line-height:1.4; padding:4px 12px; border-radius:999px;
+  border:1px solid var(--border); background:var(--card); color:var(--text-body);}
+.fusion .f-src b{color:var(--text);}
+.fusion .f-op{color:var(--text-aux); font-weight:700;}
+.fusion .f-target{font-size:var(--fs-small); font-weight:700; line-height:1.4; padding:5px 14px;
+  border-radius:999px; color:#fff; background:linear-gradient(135deg,var(--std),var(--full));}
+
+/* ===== 02 创新：两条主线 ===== */
+.mainlines{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s6);}
+.ml{border:1px solid var(--border); border-radius:12px; padding:var(--s6); background:var(--card);}
+.ml.m1{border-left:4px solid var(--std);}
+.ml.m2{border-left:4px solid var(--full);}
+.ml .ml-tag{display:inline-block; font-size:12px; font-weight:600; padding:2px 10px; border-radius:999px; margin-bottom:var(--s2);}
+.ml.m1 .ml-tag{background:var(--std-tint); color:var(--std-text);}
+.ml.m2 .ml-tag{background:var(--full-tint); color:var(--full-text);}
+.ml h4{font-size:var(--fs-h3); font-weight:600; color:var(--text); margin:0 0 var(--s2); line-height:var(--lh-h3);}
+.ml .ml-q{font-size:var(--fs-small); color:var(--text-body); margin:0 0 var(--s2); line-height:var(--lh-small);}
+.ml .ml-q b{color:var(--text);}
+.ml .ml-mech{font-size:var(--fs-aux); color:var(--text-aux); line-height:var(--lh-aux);
+  border-top:1px dashed var(--border); padding-top:var(--s2);}
+.analogy{margin-top:var(--s4); border:1px dashed var(--border-strong); border-radius:12px;
+  padding:var(--s4) var(--s6); font-size:var(--fs-small); line-height:var(--lh-small); color:var(--text-body); background:var(--zebra);}
+.analogy b{color:var(--text);}
+
+/* 创新编号小标 */
+.inno-no{display:inline-block; font-family:var(--font-mono); font-size:12px; font-weight:600;
+  color:var(--full-text); background:var(--full-tint); border:1px solid var(--full-border);
+  border-radius:6px; padding:1px 8px; margin-bottom:var(--s2);}
+
+/* 五槽契约 */
+.slots{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:var(--s2); margin-top:var(--s4);}
+.slot{border:1px solid var(--std-border); border-radius:10px; background:var(--std-tint);
+  padding:var(--s4) var(--s2); text-align:center;}
+.slot .sl-t{font-size:var(--fs-small); font-weight:600; color:var(--std-text);}
+.slot .sl-s{font-size:12px; color:var(--text-aux); margin-top:2px; line-height:1.4;}
+.slot-rule{margin-top:var(--s4); font-size:var(--fs-small); line-height:var(--lh-small); color:var(--text-body);}
+.slot-rule b{color:var(--warn-text); font-weight:600;}
+
+/* 对照实验 */
+.xp{width:100%; border-collapse:collapse; font-size:var(--fs-small); line-height:var(--lh-small); margin-top:var(--s4);}
+.xp th,.xp td{text-align:left; padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:top;}
+.xp thead th{background:var(--bg); border-bottom:2px solid var(--border-strong); font-weight:600; color:var(--text);}
+.xp tbody tr:nth-child(even){background:var(--zebra);}
+.xp td.ctl{color:var(--warn-text);}
+.xp td.exp{color:var(--lite-text);}
+.xp-conclusion{margin-top:var(--s4); font-size:var(--fs-small); line-height:var(--lh-small); color:var(--text-body);}
+.xp-conclusion b{color:var(--text);}
+
+/* ===== 03 价值：实战链路步进 ===== */
+.chainflow{display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:var(--s2); align-items:stretch; margin-top:var(--s4);}
+.cf-step{border:1px solid var(--border); border-radius:10px; padding:var(--s4); background:var(--card);
+  display:flex; flex-direction:column; gap:4px; justify-content:center;}
+.cf-step .cf-no{font-family:var(--font-mono); font-size:11px; font-weight:600; color:var(--text-aux); letter-spacing:.5px;}
+.cf-step .cf-t{font-size:var(--fs-small); font-weight:600; color:var(--text); line-height:1.45;}
+.cf-step .cf-s{font-size:12px; color:var(--text-aux); line-height:1.5;}
+.cf-step.cf-gate{border-left:4px solid var(--gate); background:var(--gate-tint);}
+.cf-step.cf-gate .cf-t{color:var(--gate-text);}
+.cf-step.cf-find{border-left:4px solid var(--warn); background:var(--warn-tint);}
+.cf-step.cf-find .cf-t{color:var(--warn-text);}
+.cf-step.cf-pass{border-left:4px solid var(--lite); background:var(--lite-tint);}
+.cf-step.cf-pass .cf-t{color:var(--lite-text);}
+.cf-arrow{align-self:center; color:var(--text-aux); font-size:var(--fs-h3); font-weight:700;
+  animation:flow 1.6s ease-in-out infinite;}
+
+/* ===== 块：流程图（复用自工作流页） ===== */
+.flow{
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
+  column-gap:var(--s6); align-items:start;
+}
+.flow .judge, .flow .rail, .flow .sink{grid-column:1 / -1;}
+
+/* 判定节点 */
+.judge{display:flex; flex-direction:column; align-items:center;}
+.judge .node{
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  padding:var(--s4) var(--s8); border-radius:999px;
+  background:linear-gradient(135deg,var(--judge-bg1),var(--judge-bg2));
+  color:var(--judge-fg); text-align:center; min-width:420px;
+}
+.judge .node .t{font-size:var(--fs-h3); font-weight:600; line-height:var(--lh-h3);}
+.judge .node .m{font-family:var(--font-mono); font-size:12px; color:var(--judge-fg-aux);}
+
+/* 分流横杆 */
+.rail{position:relative; height:40px; margin-top:var(--s2);}
+.rail .stem{position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:2px; height:var(--s4); background:var(--border-strong);}
+.rail .h{position:absolute; top:var(--s4); left:16.666%; width:66.668%; height:2px; background:var(--border-strong);}
+.rail .drop{position:absolute; top:var(--s4); width:10px; height:10px;
+  border-top:2px solid var(--border-strong); border-right:2px solid var(--border-strong);
+  transform:rotate(135deg);}
+.rail .drop.d1{left:16.666%; transform:translateX(-50%) rotate(135deg);}
+.rail .drop.d2{left:50%; transform:translateX(-50%) rotate(135deg);}
+.rail .drop.d3{left:83.333%; transform:translateX(-50%) rotate(135deg);}
+
+/* 泳道 */
+.lane{display:flex; flex-direction:column;}
+.lane .lane-head{
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  min-height:76px; justify-content:center; text-align:center;
+  padding:var(--s4); border-radius:12px 12px 0 0; margin-bottom:0;
+}
+.lane.lite-lane .lane-head{background:var(--lite-tint); border:1px solid var(--lite-border); border-bottom:none;}
+.lane.std-lane .lane-head{background:var(--std-tint); border:1px solid var(--std-border); border-bottom:none;}
+.lane.full-lane .lane-head{background:var(--full-tint); border:1px solid var(--full-border); border-bottom:none;}
+.lane .lane-head .name{font-size:var(--fs-h3); font-weight:600; line-height:var(--lh-h3); color:var(--text);}
+.lane .lane-head .sub{font-size:var(--fs-aux); line-height:var(--lh-aux); color:var(--text-aux);}
+.lane .lane-head .chip{font-size:11px;}
+
+/* 步骤 */
+.steps{display:flex; flex-direction:column; padding:var(--s4); padding-top:var(--s2);
+  background:var(--card); border:1px solid var(--border); border-top:none; border-radius:0 0 12px 12px;
+  min-height:0;}
+.step{position:relative; min-height:56px; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:2px; text-align:center;
+  padding:10px 12px; font-size:var(--fs-small); line-height:var(--lh-small);
+  background:var(--card); border:1px solid var(--border); border-left:3px solid var(--border-strong);
+  border-radius:8px; overflow-wrap:break-word; word-break:break-word;}
+.step .st-name{color:var(--text); font-weight:500;}
+.step .st-sub{font-size:12px; line-height:1.5; color:var(--text-aux);}
+.lane.lite-lane .step{border-left-color:var(--lite);}
+.lane.std-lane .step{border-left-color:var(--std);}
+.lane.full-lane .step{border-left-color:var(--full);}
+
+.step.gate{background:var(--gate-tint); border-color:var(--gate-border);}
+.lane.std-lane .step.gate{border-left-color:var(--gate);}
+.lane.full-lane .step.gate{border-left-color:var(--gate);}
+.step.gate .st-name::before{content:"◆ "; color:var(--gate);}
+.step.warn{background:var(--warn-tint); border-color:var(--warn-border);}
+.lane.std-lane .step.warn{border-left-color:var(--warn);}
+.step.warn .st-name::before{content:"▲ "; color:var(--warn);}
+
+/* 步骤连接竖线 + 三角 */
+.step:not(:last-child){margin-bottom:var(--s6);}
+.step:not(:last-child)::after{content:""; position:absolute; left:50%; bottom:calc(-1 * var(--s6));
+  width:2px; height:var(--s6); transform:translateX(-50%); background:var(--border-strong);}
+.step:not(:last-child)::before{content:""; position:absolute; left:50%; bottom:calc(-1 * var(--s6) - 9px);
+  transform:translateX(-50%); width:0; height:0; border:5px solid transparent; border-top-color:var(--border-strong);}
+
+/* subagent 派发 chip */
+.dispatch{display:flex; justify-content:center; margin-top:var(--s2);}
+.dispatch .chip{font-family:var(--font-mono); font-size:11px;}
+.dispatch .chip.go{background:var(--std-tint); border-color:var(--std-border); color:var(--std-text);}
+.dispatch .chip.off{background:var(--bg); border-style:dashed; color:var(--text-aux);}
+
+/* 底部收束 */
+.sink{display:flex; justify-content:center; margin-top:var(--s2);}
+.sink .node{min-width:440px; text-align:center; padding:var(--s4) var(--s8);
+  border-radius:12px; background:var(--card); border:2px solid var(--text); color:var(--text);}
+.sink .node .t{font-size:var(--fs-h3); font-weight:600;}
+.sink .node .m{font-size:var(--fs-aux); color:var(--text-aux); margin-top:2px;}
+
+/* ===== 04 机制详解（原核心细节） ===== */
+.detail-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s6);}
+.detail-grid .card{display:flex; flex-direction:column;}
+.detail-grid .spill{grid-column:1 / -1;}
+
+/* 表格 */
+table{border-collapse:collapse; width:100%; font-size:var(--fs-small); line-height:var(--lh-small);}
+th,td{text-align:left; padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:top;}
+thead th{background:var(--bg); border-bottom:2px solid var(--border-strong); font-weight:600; color:var(--text);}
+tbody tr:nth-child(even){background:var(--zebra);}
+td .arrow-chain{color:var(--text-body);}
+td code{white-space:nowrap;}
+.table-scroll{overflow-x:auto; scrollbar-width:thin;}
+.table-scroll table{min-width:min-content;}
+.mat td{font-family:var(--font-mono); font-size:var(--fs-aux);}
+.mat th.env{min-width:140px;}
+.mat td.review-col, .mat th.review-col{background:var(--gate-tint);}
+.mat tbody th.sticky{position:sticky; left:0; background:var(--card); font-weight:600; color:var(--text);
+  font-family:var(--font-mono); font-size:var(--fs-aux); text-align:left;}
+.caption{font-size:var(--fs-aux); color:var(--text-aux); margin-top:var(--s2); line-height:var(--lh-aux);}
+
+/* 角色卡 2x2 */
+.role-head{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s2); margin-bottom:var(--s2);}
+.role-head .nm{font-family:var(--font-mono); font-size:var(--fs-h3); font-weight:600; color:var(--text);}
+.role-head .badge{font-size:var(--fs-aux); padding:2px 8px; border-radius:999px;
+  border:1px solid var(--std-border); color:var(--std-text); background:var(--std-tint);}
+dl.field{margin:0; display:flex; flex-direction:column; gap:var(--s2); flex:1;}
+dl.field dt{font-size:var(--fs-aux); color:var(--text-aux); font-weight:700; letter-spacing:1px;
+  margin-top:var(--s2); display:flex; align-items:center; gap:6px;}
+dl.field dt::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--std);}
+dl.field dd{margin:2px 0 0; font-size:var(--fs-small); line-height:var(--lh-small); color:var(--text-body);}
+
+/* 双维度 */
+.dim-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s6);}
+.dim{border:1px solid var(--border); border-radius:12px; padding:var(--s6); background:var(--card);}
+.dim.min{border-left:4px solid var(--std);}
+.dim.enh{border-left:4px solid var(--gate);}
+.dim h4{font-size:var(--fs-h3); font-weight:600; color:var(--text); margin:0 0 var(--s2); line-height:var(--lh-h3);}
+.dim .tag{display:inline-block; font-size:12px; font-weight:600; padding:2px 10px; border-radius:999px; margin-bottom:var(--s2);}
+.dim.min .tag{background:var(--std-tint); color:var(--std-text);}
+.dim.enh .tag{background:var(--gate-tint); color:var(--gate-text);}
+/* 价值四笔账：四色区分 */
+.dim.v-know{border-left:4px solid var(--std);}
+.dim.v-know .tag{background:var(--std-tint); color:var(--std-text);}
+.dim.v-token{border-left:4px solid var(--lite);}
+.dim.v-token .tag{background:var(--lite-tint); color:var(--lite-text);}
+.dim.v-time{border-left:4px solid var(--gate);}
+.dim.v-time .tag{background:var(--gate-tint); color:var(--gate-text);}
+.dim.v-quality{border-left:4px solid var(--full);}
+.dim.v-quality .tag{background:var(--full-tint); color:var(--full-text);}
+.dim ul{margin:var(--s2) 0 0; padding-left:20px; font-size:var(--fs-small); line-height:var(--lh-small); color:var(--text-body);}
+.dim ul li + li{margin-top:var(--s2);}
+.dim ul li b{color:var(--text);}
+.rule-strip{background:var(--warn-tint); border:1px solid var(--warn-border); border-radius:12px;
+  padding:var(--s4) var(--s6); color:var(--warn-text); font-size:var(--fs-small); line-height:var(--lh-small); margin-top:var(--s6);}
+
+/* ===== 4.4 降级栈（阶梯步进条） ===== */
+.degrade-stack{display:flex; flex-direction:column; gap:var(--s4);}
+.degrade-row{border:1px solid var(--border); border-radius:12px; padding:var(--s4) var(--s6);
+  background:var(--card); transition:box-shadow .2s ease;}
+.degrade-row:hover{box-shadow:var(--shadow);}
+.d-row-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:var(--s4);}
+.d-name{font-family:var(--font-mono); font-size:var(--fs-h3); font-weight:600; color:var(--text);}
+.d-meta{font-size:var(--fs-aux); color:var(--text-aux);}
+.d-steps{display:grid; align-items:stretch; gap:var(--s2);}
+.d-steps.d-3{grid-template-columns:1fr auto 1fr auto 1fr;}
+.d-steps.d-4{grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;}
+.d-arrow{align-self:center; color:var(--text-aux); font-size:var(--fs-h3); font-weight:700;
+  animation:flow 1.6s ease-in-out infinite;}
+.d-step{position:relative; display:flex; flex-direction:column; gap:4px;
+  padding:12px 14px; border-radius:8px; border:1px solid var(--border); background:var(--card);
+  min-height:72px; justify-content:center; transition:transform .15s ease, border-color .15s ease;}
+.d-step:hover{transform:translateY(-2px);}
+.d-step .d-no{font-family:var(--font-mono); font-size:11px; font-weight:600;
+  color:var(--text-aux); letter-spacing:.5px;}
+.d-step .d-txt{font-size:var(--fs-small); line-height:1.45; color:var(--text-body); font-weight:500;}
+.d-step.d-start{border-left:4px solid var(--std); background:var(--std-tint);}
+.d-step.d-start .d-no, .d-step.d-start .d-txt{color:var(--std-text);}
+.d-step.d-start .d-txt{font-weight:600;}
+.d-step.d-end{border-left:4px solid var(--warn); background:var(--warn-tint);}
+.d-step.d-end .d-no{color:var(--warn-text);}
+.d-step.d-end .d-txt{color:var(--warn-text); font-weight:600;}
+.d-note{margin-top:var(--s4); font-size:var(--fs-aux); color:var(--text-aux); line-height:var(--lh-aux);
+  border-top:1px dashed var(--border); padding-top:var(--s2);}
+@keyframes flow{0%,100%{transform:translateX(0); opacity:.45;}50%{transform:translateX(3px); opacity:1;}}
+/* reviewer 链首尾用主轴色区别 */
+.degrade-row.rev .d-step.d-start{border-left-color:var(--gate); background:var(--gate-tint);}
+.degrade-row.rev .d-step.d-start .d-no, .degrade-row.rev .d-step.d-start .d-txt{color:var(--gate-text);}
+
+/* ===== 重点高亮 span ===== */
+strong.hl-orange{color:var(--gate-text); font-weight:600;}
+strong.hl-red{color:var(--warn-text); font-weight:600;}
+strong.hl-blue{color:var(--std-text); font-weight:600;}
+strong.hl-green{color:var(--lite-text); font-weight:600;}
+
+/* ===== 动画 & 交互 ===== */
+.reveal{opacity:0; transform:translateY(18px); transition:opacity .55s ease, transform .55s ease;}
+.reveal.in{opacity:1; transform:none;}
+.card{transition:box-shadow .25s ease, transform .25s ease;}
+.card:hover{box-shadow:0 2px 8px rgba(15,23,42,.06),0 4px 16px rgba(15,23,42,.08);}
+.lane .step{transition:transform .15s ease, box-shadow .15s ease;}
+.lane .step:hover{transform:translateY(-2px); box-shadow:0 2px 6px rgba(15,23,42,.08);}
+.lane .step.gate{animation:gatePulse 2.4s ease-in-out infinite;}
+@keyframes gatePulse{0%,100%{box-shadow:0 0 0 0 rgba(217,119,6,0);}50%{box-shadow:0 0 0 5px rgba(217,119,6,.12);}}
+.lane .step.warn{animation:warnPulse 2.4s ease-in-out infinite;}
+@keyframes warnPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0);}50%{box-shadow:0 0 0 5px rgba(220,38,38,.10);}}
+
+/* ===== 可点击节点 & 详情气泡 ===== */
+.step[data-tip], .judge .node[data-tip], .sink .node[data-tip]{cursor:pointer;}
+.step[data-tip]:hover, .judge .node[data-tip]:hover, .sink .node[data-tip]:hover{outline:2px solid var(--std); outline-offset:2px;}
+
+.tip-bubble{
+  position:fixed; z-index:1200; width:356px; max-width:calc(100vw - 32px);
+  background:var(--bubble-bg); border:1px solid var(--bubble-border); border-radius:14px;
+  box-shadow:var(--bubble-shadow);
+  padding:0; overflow:hidden;
+  opacity:0; transform:translateY(8px) scale(.97); pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+}
+.tip-bubble::before{content:""; display:block; height:4px;
+  background:linear-gradient(90deg,var(--std),var(--full));}
+.tip-bubble.show{opacity:1; transform:none; pointer-events:auto;}
+.tip-bubble .tb-head{padding:12px 16px; border-bottom:1px solid var(--bubble-border);
+  display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--bubble-head-bg);}
+.tip-bubble .tb-title{font-size:var(--fs-small); font-weight:700; color:var(--bubble-title); line-height:1.4;}
+.tip-bubble .tb-close{border:none; background:transparent; color:var(--bubble-title); cursor:pointer;
+  font-size:18px; line-height:1; padding:2px 8px; border-radius:6px; flex:none; opacity:.6;}
+.tip-bubble .tb-close:hover{color:var(--bubble-title); background:var(--bubble-border); opacity:1;}
+.tip-bubble .tb-body{padding:14px 16px; font-size:var(--fs-small); line-height:1.7; color:var(--bubble-text);
+  max-height:min(320px, 60vh); overflow:auto;}
+.tip-bubble .tb-body b{color:var(--bubble-title); font-weight:600;}
+.tip-bubble .arrow{position:absolute; width:12px; height:12px; background:var(--bubble-bg);
+  border-left:1px solid var(--bubble-border); border-top:1px solid var(--bubble-border);
+  transform:rotate(45deg);}
+
+.hero h1{animation:fadeUp .7s ease both;}
+.hero .sub{animation:fadeUp .7s .08s ease both;}
+.hero .tags{animation:fadeUp .7s .16s ease both;}
+@keyframes fadeUp{from{opacity:0; transform:translateY(14px);}to{opacity:1; transform:none;}}
+.judge .node{animation:judgeIn .7s .1s cubic-bezier(.22,1,.36,1) both;}
+@keyframes judgeIn{from{opacity:0; transform:scale(.92);}to{opacity:1; transform:none;}}
+table.mat tbody tr, table.tier tbody tr{transition:background .15s ease;}
+table.mat tbody tr:hover td, table.tier tbody tr:hover td{background:var(--std-tint);}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important; transition:none!important;}
+  .reveal{opacity:1; transform:none;}
+}
+
+/* 铁律 / 原则清单 */
+.rules{columns:2; column-gap:var(--s12);}
+.rule{display:flex; gap:var(--s2); align-items:baseline; padding:var(--s2) 0; break-inside:avoid; font-size:var(--fs-small); line-height:var(--lh-small);}
+.rule .num{flex:none; font-family:var(--font-mono); font-size:12px; color:var(--std-text);
+  background:var(--std-tint); border:1px solid var(--std-border); border-radius:6px; padding:1px 7px;}
+.rule .txt{color:var(--text-body);}
+.rule .txt b{color:var(--text); font-weight:600;}
+.rule .txt .sub{display:block; color:var(--text-aux); font-size:var(--fs-aux); margin-left:0; margin-top:2px;}
+
+/* 章节小节标题 */
+.sub-h{display:flex; align-items:baseline; gap:var(--s2); margin:var(--s8) 0 var(--s4);}
+.sub-h .idx{font-family:var(--font-mono); font-size:var(--fs-aux); font-weight:600; color:var(--full-text);
+  background:var(--full-tint); border:1px solid var(--full-border); border-radius:6px; padding:1px 8px;}
+.sub-h h3{font-size:var(--fs-h3); font-weight:700; color:var(--text); margin:0; line-height:var(--lh-h3);}
+.sub-h .why{font-size:var(--fs-aux); color:var(--text-aux); margin-left:auto;}
+
+footer{margin-top:var(--s16); padding-top:var(--s8); border-top:1px solid var(--border);}
+footer .wrap{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between;
+  font-size:var(--fs-aux); color:var(--text-aux); padding-bottom:var(--s24);}
+footer code{font-size:12px;}
+
+/* 响应式 */
+@media(max-width:900px){
+  .detail-grid{grid-template-columns:1fr;}
+  .dim-grid{grid-template-columns:1fr;}
+  .rules{columns:1;}
+  .versus{grid-template-columns:1fr;}
+  .walls{grid-template-columns:1fr;}
+  .mainlines{grid-template-columns:1fr;}
+  .slots{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:768px){
+  :root{--page-pad:20px;}
+  .wrap.hero{padding-top:var(--s12); padding-bottom:var(--s8);}
+  section{margin-top:var(--s12);}
+  .flow{grid-template-columns:1fr;}
+  .rail{display:none;}
+  .judge .node{min-width:0; width:100%;}
+  .sink .node{min-width:0; width:100%;}
+  .slots{grid-template-columns:1fr;}
+  .chainflow{grid-template-columns:1fr;}
+  .cf-arrow{transform:rotate(90deg); justify-self:center;}
+}
+</style>
+</head>
+<body>
+
+<div class="top-toolbar">
+  <div class="fontsz" role="group" aria-label="字号设置">
+    <button class="fsz-btn" data-fs="small" type="button" title="小字号">A</button>
+    <button class="fsz-btn is-active" data-fs="medium" type="button" title="中字号（默认）">A</button>
+    <button class="fsz-btn" data-fs="large" type="button" title="大字号">A</button>
+  </div>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换深浅色主题" title="切换深浅色主题">
+    <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+    </svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+    </svg>
+  </button>
+</div>
+
+<div class="wrap hero">
+  <div class="hero">
+    <span class="kicker">grill-power · 项目介绍 · v1.9.0</span>
+    <h1>让 AI 写代码别再「瞎改」</h1>
+    <p class="sub">一个按风险分级的多 Agent 开发工作流 —— <b>想透，写少；风险越高，流程越深。</b>给 AI 一个需求，它先判断「改错了的代价有多大」，再挑一条深浅相称的流程：改个函数走最轻的路，动数据库走最重的路。</p>
+    <div class="tags">
+      <span class="chip lite"><span class="dot" style="background:var(--lite)"></span>Lite · 零 subagent</span>
+      <span class="chip std"><span class="dot" style="background:var(--std)"></span>Standard · 一次审查</span>
+      <span class="chip full"><span class="dot" style="background:var(--full)"></span>Full · 统一审查 + 复审</span>
+      <span class="chip"><span class="dot" style="background:var(--gate)"></span>两个 Gate</span>
+      <span class="chip"><span class="dot" style="background:var(--warn)"></span>11 条铁律</span>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- ============ 01 业务背景与问题介绍 ============ -->
+  <section id="background">
+    <div class="sec-head">
+      <span class="no">01</span>
+      <h2>业务背景与问题介绍</h2>
+      <p>AI 编码已经进入日常，但「给 AI 立规矩」这件事普遍踩在两端的坑上：小改动被重流程拖垮，大改动缺纪律翻车。根因不是流程多或少，而是用一套固定流程对付风险天差地别的任务。</p>
+    </div>
+
+    <!-- 两种翻车现场 -->
+    <div class="versus reveal">
+      <div class="vs-card over">
+        <span class="vs-tag">翻车现场 ① · 过度治理</span>
+        <h4>小改动被重流程拖垮</h4>
+        <p>改个函数名、补个判空，一分钟的事，AI 却要你陪它走一遍 TDD、写份 spec、再来两轮 review —— 半小时就没了。大部分时间耗在「流程」而不是「问题」上。</p>
+        <p>更要命的是，流程太重，人的第一反应是绕道：不改了，或者偷偷改，<b>规矩形同虚设</b>。</p>
+        <div class="vs-cost">代价：<b>流程被架空</b>，有纪律但太重</div>
+      </div>
+      <div class="vs-card under">
+        <span class="vs-tag">翻车现场 ② · 治理不足</span>
+        <h4>大改动缺纪律翻车</h4>
+        <p>碰到跨三个模块、还要动数据库结构的改动，AI 又变得异常勇敢：没摸过代码就开始设计，没做过压力测试就动手，最后「解决得漂漂亮亮」。</p>
+        <p>可方向一旦错了，<b>越漂亮越返工</b>。</p>
+        <div class="vs-cost">代价：<b>方向性返工</b>，有信任但太散</div>
+      </div>
+    </div>
+
+    <!-- 单会话三堵墙 -->
+    <div class="sub-h">
+      <span class="idx">深挖</span>
+      <h3>一个会话从头干到尾，必然撞上三堵墙</h3>
+    </div>
+    <div class="walls reveal">
+      <div class="wall">
+        <span class="w-no">墙 ①</span>
+        <h4>上下文天花板</h4>
+        <p>为改一个小功能读十个文件，原文全堆在同一个会话里。读到最后，注意力被大量无关代码稀释——该记住的约束忘了，不该改的地方改了。</p>
+        <div class="w-punch">信噪比随材料堆积而下降</div>
+      </div>
+      <div class="wall">
+        <span class="w-no">墙 ②</span>
+        <h4>角色冲突</h4>
+        <p>同一个会话先「设计方案」，再「实现方案」，最后「审查方案」——天然倾向于确认自己前面的判断。不是模型不诚实，是决策层的自我背书。</p>
+        <div class="w-punch">既当运动员又当裁判</div>
+      </div>
+      <div class="wall">
+        <span class="w-no">墙 ③</span>
+        <h4>自我审查盲区</h4>
+        <p>让写代码的会话审自己写的代码，满脑子是「我为什么这么写」——漏掉的边界条件，它根本想不起来去查。</p>
+        <div class="w-punch">审了，但等于没审</div>
+      </div>
+    </div>
+
+    <!-- 根因 -->
+    <div class="rootcause reveal">
+      <div class="rc-t">根因：拿一套固定流程，去对付风险天差地别的任务</div>
+      <div class="rc-s">低风险任务被过度治理，高风险任务被治理不足。AI 需要一个「知道这次该走多深」的判断，而没人告诉它。</div>
+    </div>
+
+    <!-- 现有工具对照 -->
+    <div class="sub-h" style="margin-top:var(--s8);">
+      <span class="idx">对照</span>
+      <h3>现有工具怎么解：三家各有所长，也各缺一块</h3>
+    </div>
+    <div class="card reveal">
+      <div class="table-scroll">
+        <table class="tier">
+          <thead>
+            <tr><th style="width:130px;">工具</th><th>精髓（值得拿走的）</th><th>缺的那块</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>openspec</code></td>
+              <td>spec 驱动：提案/规格/任务全程留痕（propose → archive），决策可追溯</td>
+              <td>全文档链一刀切——小改动也要背 spec 税负，流程深度不随风险伸缩</td>
+            </tr>
+            <tr>
+              <td><code>Superpowers</code></td>
+              <td>过程纪律工具箱：brainstorming / TDD / writing-plans / systematic-debugging，每类任务有成熟套路</td>
+              <td>按「任务类型」选套路，不按「风险」分深浅——轻改与重构付同等流程成本</td>
+            </tr>
+            <tr>
+              <td><code>grill-me</code></td>
+              <td>拷问式澄清：沿设计树逐分支追问、每问带推荐答案，把「我以为」问穿</td>
+              <td>只管问透、不管交付；面向非编码计划，自述「编码任务请用 grill-power」</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="fusion">
+        <span class="f-src">grill-me · <b>问透</b></span>
+        <span class="f-op">+</span>
+        <span class="f-src">openspec · <b>沉淀</b></span>
+        <span class="f-op">+</span>
+        <span class="f-src">Superpowers · <b>纪律</b></span>
+        <span class="f-op">→</span>
+        <span class="f-target">grill-power</span>
+      </div>
+      <p class="caption">取法：grill-me 的「问透」裁剪成工程节奏（先探索代码再问、批量 ≤3 问、Decision Gate 一次确认）；openspec 的「沉淀」只在 Full 档动用（落 plan + Plan Gate，高风险才背文档税负）；Superpowers 的「纪律」互认边界（验证复跑、根因未收束转 systematic-debugging）。三家都没覆盖的两块空白——<strong class="hl-blue">按风险分级</strong> × <strong class="hl-orange">多 Agent 编排</strong>——正是它自己的创新，见 02。</p>
+    </div>
+  </section>
+
+  <!-- ============ 02 项目创新性 ============ -->
+  <section id="innovation">
+    <div class="sec-head">
+      <span class="no">02</span>
+      <h2>项目创新性</h2>
+      <p>grill-power 的想法只有八个字：「想透，写少；风险越高，流程越深。」像机场安检：随身行李快速过，可疑箱包开箱查 —— 让流程深度跟着风险走，而不是跟着任务大小走。它不是拍脑袋设计的，一个月 45 个 commit、十余组端到端场景评测，每个机制背后都是一次真实踩出来的坑。</p>
+    </div>
+
+    <!-- 核心思想：两条主线 -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <h3>核心思想：两条主线咬合，而非简单叠加</h3>
+      <p class="desc">很多人第一次看它会以为这是个「多 Agent 工作流」——只说对了一半。它是<strong class="hl-blue">问题分级</strong> × <strong class="hl-orange">多 Agent 编排</strong>的上下游咬合：先分诊，再排医生。</p>
+      <div class="mainlines" style="margin-top:var(--s4);">
+        <div class="ml m1">
+          <span class="ml-tag">主线 ① · 分诊台</span>
+          <h4>问题分级</h4>
+          <p class="ml-q">回答：这件事<b>值不值得</b>上重流程？</p>
+          <div class="ml-mech">四维度判定风险 → Lite / Standard / Full 三档 → 两个 Gate + 11 条铁律兜底</div>
+        </div>
+        <div class="ml m2">
+          <span class="ml-tag">主线 ② · 排医生</span>
+          <h4>多 Agent 编排</h4>
+          <p class="ml-q">回答：如果上，<b>该派谁去干</b>？</p>
+          <div class="ml-mech">四个角色（explore / reader / coder / reviewer）→ 五槽契约派活 → 双维度审查</div>
+        </div>
+      </div>
+      <div class="analogy">
+        <b>关键限定：</b>Lite 档全程零 subagent，只有 Standard / Full 才起多 Agent 编排。这不是省事，而是纪律——<b>Agent 数量本身是成本</b>（多一份上下文开销、多一层协调成本），科室齐全不等于每个感冒都要会诊。
+      </div>
+    </div>
+
+    <!-- 创新 1：按风险分级 -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <span class="inno-no">创新点 1</span>
+      <h3>按风险分级：看「改错了会怎样」，而非「改了多少」</h3>
+      <p class="desc">第一个反直觉的设计：<strong class="hl-blue">任务大小和风险并不正相关</strong>。500 行但逻辑直白的改动，风险可能远低于 30 行却改到启动流程或协议字段的改动。所以分级看四个维度——<strong class="hl-orange">依赖范围 · 风险 · 影响面 · 可验证性</strong>；两条原则——<strong class="hl-red">就高不就低</strong>（存疑升档，高风险不可逆操作不得低于 Full）、<strong class="hl-red">升档看风险不看任务数量</strong>（防止「为了安全而安全」的过度治理）。</p>
+      <div class="flow" style="margin-top:var(--s6);">
+        <!-- 判定节点 -->
+        <div class="judge">
+          <div class="node" data-tip="judge">
+            <span class="t">分级判定</span>
+            <span class="m">mode = f(依赖 · 风险 · 影响面 · 可验证性)</span>
+          </div>
+        </div>
+
+        <!-- 分流横杆 -->
+        <div class="rail">
+          <span class="stem"></span>
+          <span class="h"></span>
+          <span class="drop d1"></span>
+          <span class="drop d2"></span>
+          <span class="drop d3"></span>
+        </div>
+
+        <!-- Lite 泳道 -->
+        <div class="lane lite-lane">
+          <div class="lane-head">
+            <span class="name">Lite</span>
+            <span class="sub">单文件/单函数 · 低风险 · 改法明确</span>
+            <span class="chip off">零 subagent · 不落 plan（铁律 11）</span>
+          </div>
+          <div class="steps">
+            <div class="step" data-tip="lite-success"><span class="st-name">成功标准</span><span class="st-sub">最小改动路径</span></div>
+            <div class="step" data-tip="lite-fact"><span class="st-name">核对事实</span><span class="st-sub">需求 vs 代码事实</span></div>
+            <div class="step" data-tip="lite-edit"><span class="st-name">改动</span></div>
+            <div class="step" data-tip="lite-verify"><span class="st-name">验证</span><span class="st-sub">命令 / 人工步骤</span></div>
+            <div class="step" data-tip="lite-selfrev"><span class="st-name">主会话自审</span><span class="st-sub">覆盖 · 边界 · 引用</span></div>
+            <div class="step" data-tip="lite-report"><span class="st-name">汇报</span><span class="st-sub">询问 commit</span></div>
+          </div>
+          <div class="dispatch"><span class="chip off">全程主会话 · 零 subagent</span></div>
+        </div>
+
+        <!-- Standard 泳道 -->
+        <div class="lane std-lane">
+          <div class="lane-head">
+            <span class="name">Standard</span>
+            <span class="sub">1~2 模块 · 方案/边界歧义 · 无高风险不可逆</span>
+            <span class="chip">一次独立审查</span>
+          </div>
+          <div class="steps">
+            <div class="step" data-tip="std-explore"><span class="st-name">探索</span><span class="st-sub">explore → reader</span></div>
+            <div class="step" data-tip="std-grill"><span class="st-name">精简 grill</span><span class="st-sub">批量 ≤3 问 · 带推荐</span></div>
+            <div class="step gate" data-tip="std-decision"><span class="st-name">Decision Gate</span><span class="st-sub">定「做什么」· 一次确认</span></div>
+            <div class="step warn" data-tip="std-escalate"><span class="st-name">升 Full 检查</span><span class="st-sub">命中即停 → full.md</span></div>
+            <div class="step" data-tip="std-impl"><span class="st-name">实现</span><span class="st-sub">固化 task brief · ≤5文件&≤300行→主会话 / 否则 coder</span></div>
+            <div class="step" data-tip="std-review"><span class="st-name">独立审查</span><span class="st-sub">reviewer · 双维度</span></div>
+            <div class="step" data-tip="std-report"><span class="st-name">汇报</span><span class="st-sub">审查策略 · 降级原因</span></div>
+          </div>
+          <div class="dispatch">
+            <span class="chip go">→ explore</span>
+            <span class="chip go">→ coder</span>
+            <span class="chip go">→ reviewer</span>
+          </div>
+        </div>
+
+        <!-- Full 泳道 -->
+        <div class="lane full-lane">
+          <div class="lane-head">
+            <span class="name">Full</span>
+            <span class="sub">跨2+模块+共享状态 / 跨3+ · DB·协议·迁移回滚</span>
+            <span class="chip">统一审查 + 复审</span>
+          </div>
+          <div class="steps">
+            <div class="step" data-tip="full-explore"><span class="st-name">完整探索</span><span class="st-sub">explore → reader（按需）</span></div>
+            <div class="step" data-tip="full-grill"><span class="st-name">grill</span><span class="st-sub">方案确认（现状/方案/决策表）</span></div>
+            <div class="step gate" data-tip="full-decision"><span class="st-name">Decision Gate</span><span class="st-sub">用户拍板</span></div>
+            <div class="step" data-tip="full-plan"><span class="st-name">落 plan</span><span class="st-sub">writing-plan</span></div>
+            <div class="step gate" data-tip="full-plangate"><span class="st-name">Plan Gate</span><span class="st-sub">审计划 [通过 / 等待 / 退回]</span></div>
+            <div class="step" data-tip="full-exec"><span class="st-name">分组执行</span><span class="st-sub">串行 / 可证明独立并行 · coder 实现（≤5文件&≤300行→主会话）</span></div>
+            <div class="step" data-tip="full-review"><span class="st-name">统一 review</span><span class="st-sub">只启动一次 reviewer</span></div>
+            <div class="step" data-tip="full-rereview"><span class="st-name">一次复审 → 收尾</span></div>
+          </div>
+          <div class="dispatch">
+            <span class="chip go">→ explore</span>
+            <span class="chip go">→ coder</span>
+            <span class="chip go">→ reviewer</span>
+          </div>
+        </div>
+
+        <!-- 底部收束 -->
+        <div class="sink">
+          <div class="node" data-tip="sink">
+            <div class="t">统一收尾 · 汇报</div>
+            <div class="m">汇报模式 · 改动文件 · 验证命令/步骤 · 实际结果 · 未完成/降档项</div>
+          </div>
+        </div>
+      </div>
+      <p class="caption">点击流程节点可看每步细则。同一句需求（如「优化一下首页加载」），被认出三种风险后会走出完全不同的三条路——分级的价值不是「更谨慎」，而是把同一句需求里藏着的不同风险认出来。</p>
+    </div>
+
+    <!-- 创新 2：四角色 + 五槽契约 -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <span class="inno-no">创新点 2</span>
+      <h3>多 Agent 编排：四个角色 + 五槽契约，缺一槽不派</h3>
+      <p class="desc"><strong class="hl-blue">按角色路由，而不是按任务路由</strong>——不是「任务复杂就派三个 Agent 一起上」，而是「现在需要哪种能力就派哪个角色」，像真实项目组一样分工。角色分工还顺带打开成本杠杆：粗活用便宜快的模型，实现和审查才用强模型。</p>
+      <div class="table-scroll" style="margin-top:var(--s4);">
+        <table>
+          <thead>
+            <tr><th style="width:110px;">角色</th><th>一句话职责</th><th>典型触发</th><th>类比项目组</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>explore</code></td><td>广度定位：按关键词/符号定位相关文件与入口</td><td>Standard/Full 探索阶段默认派</td><td><b>调研员</b>——先摸清地形画张地图</td></tr>
+            <tr><td><code>reader</code></td><td>精读理解：读指定文件/区间，返回结构化摘要（≤30 行）</td><td>explore 输出不足以确认实现/约束时</td><td><b>精读员</b>——把关键文件读透交一页摘要</td></tr>
+            <tr><td><code>coder</code></td><td>实现：按 task 在文件白名单内实现 + task 级验证</td><td>预估 &gt;5 文件或 &gt;300 行，或预估不确定</td><td><b>工程师</b>——划定范围内施工，越界即停</td></tr>
+            <tr><td><code>reviewer</code></td><td>独立审查：需求覆盖/边界回归/入口引用/验证证据</td><td>实现完成后默认派</td><td><b>质检员</b>——只审不写</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sub-h" style="margin-top:var(--s6);">
+        <span class="idx">契约</span>
+        <h3>五槽契约：派活的 prompt 才是真正的接口</h3>
+      </div>
+      <div class="slots reveal">
+        <div class="slot"><div class="sl-t">职责</div><div class="sl-s">干什么</div></div>
+        <div class="slot"><div class="sl-t">输入</div><div class="sl-s">料在哪</div></div>
+        <div class="slot"><div class="sl-t">输出</div><div class="sl-s">交什么</div></div>
+        <div class="slot"><div class="sl-t">禁止</div><div class="sl-s">别碰什么</div></div>
+        <div class="slot"><div class="sl-t">停止条件</div><div class="sl-s">何时回来问</div></div>
+      </div>
+      <p class="slot-rule">五槽就是<b>给外包写需求单</b>——现实里我们对外包都这么写，对 AI 却常常只丢一句「帮我改改」。缺哪一槽就出对应的事：缺「禁止」→ 顺手重构；缺「输出」→ 把整个文件回传；缺「停止条件」→ 猜错了也不问，一直往下做。<b>任一槽缺失，不派发。</b></p>
+    </div>
+
+    <!-- 创新 3：双维度审查 -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <span class="inno-no">创新点 3</span>
+      <h3>双维度审查：独立上下文是底线，异模型是增强项</h3>
+      <p class="desc">整套设计里最容易被糊弄、也最要紧的一环。用两个<strong class="hl-orange">正交</strong>维度定义「有效审查」：<strong class="hl-blue">独立上下文</strong>（reviewer 必须是独立 agent 会话——「换个没参与的人来审」，底线不能丢）+ <strong class="hl-orange">异模型</strong>（reviewer 模型 ≠ 主会话且 ≠ coder，且必须已验证——「再换副不同牌子的眼镜」，增强项可丢）。退化顺序：先丢异模型保独立上下文；链尽 = 主会话自审 + 显式声明，<strong class="hl-red">禁写「独立审查通过」</strong>。</p>
+      <div class="sub-h" style="margin-top:var(--s6);">
+        <span class="idx">实证</span>
+        <h3>对照实验： reviewer 有没有契约约束，差在哪</h3>
+      </div>
+      <p class="desc" style="margin-top:var(--s2);">同一个审查任务（需求要求新建一个实现文件和一份测试，实际两个文件都不存在）：</p>
+      <div class="table-scroll">
+        <table class="xp">
+          <thead>
+            <tr><th style="width:120px;"></th><th>控制组：无角色契约约束</th><th>实验组：按 reviewer 契约派发</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>报了什么</b></td><td>把两个文件缺失标成 2 条 P0</td><td>同样标成 2 条 P0</td></tr>
+            <tr><td><b>然后做了什么</b></td><td class="ctl">顺手把实现和测试都写了，还跑通 9 个用例，P0「建议」栏写成「已按需求创建并验证」</td><td class="exp">一行代码没写</td></tr>
+            <tr><td><b>产物</b></td><td class="ctl">一份 Findings + 两个它自己写的文件</td><td class="exp">一份纯 Findings 报告</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="xp-conclusion">差别不在「有没有发现问题」——两组都发现了，差在<b>发现之后干了什么</b>。控制组把「审查者」和「实现者」混成一个人，diff 里再也分不清哪些是被审的代码、哪些是审查者自己补的，<b>这次审查等于没发生</b>。由此把「只审不写」写成硬边界：reviewer 对代码和 Git 只读，唯一允许写的是审查报告文件。</p>
+    </div>
+
+    <!-- 创新 4：工程韧性 -->
+    <div class="card reveal">
+      <span class="inno-no">创新点 4</span>
+      <h3>工程韧性：路由矩阵 + 降级链 + 上下文卫生 + 渐进加载</h3>
+      <p class="desc">流程能跨工具活下来、跑久了不变形，靠四件不起眼的工程事：</p>
+      <div class="dim-grid" style="margin-top:var(--s4);">
+        <div class="dim min">
+          <span class="tag">换环境不哑火</span>
+          <h4>路由矩阵 + 降级链</h4>
+          <ul>
+            <li>不同工具创建 subagent 的方式完全不同，<b>怎么喊人不能写死</b>：先探测环境，再按<b>路由矩阵</b>（环境 × 角色 → 通道/模型）选通道。</li>
+            <li>主选通道不可用/失败/超时，按序退化，<b>退到哪一档必须显式说出来</b>（铁律 6）。</li>
+            <li>经验：通道的能力边界会反过来约束角色纪律——主选通道曾因为「派出去的 Agent 无法追问」而整体更换。</li>
+          </ul>
+        </div>
+        <div class="dim min">
+          <span class="tag">主会话不被灌爆</span>
+          <h4>上下文卫生：薄回传</h4>
+          <ul>
+            <li>explore 只回 <code>文件:行号</code>+一句事实；reader 回 ≤30 行摘要；coder 回固定四段；reviewer 详报落盘、只回计数+路径。</li>
+            <li>对冲纪律：coder 自报的验证结果只作参考，<b>主会话必须自己复跑至少一条关键验证命令</b>。</li>
+            <li>详报落盘带唯一 run-id、不覆盖——三个月后还能查「当时到底审了什么」。</li>
+          </ul>
+        </div>
+        <div class="dim enh">
+          <span class="tag">skill 自己也要轻</span>
+          <h4>渐进式加载：用到哪页翻哪页</h4>
+          <ul>
+            <li>低频内容下沉到 references（Full 流程、问题设计、Plan Gate、各环境路由分片）。</li>
+            <li>主文件只留分级判定、铁律、流程骨架和加载索引——<b>主文件减重 24%</b>，顺跑路径上下文占用明显下降。</li>
+          </ul>
+        </div>
+        <div class="dim enh">
+          <span class="tag">底线钉死</span>
+          <h4>两个 Gate + 11 条铁律</h4>
+          <ul>
+            <li><b>Decision Gate</b> 定「做什么」、<b>Plan Gate</b> 审「怎么做」——需求错了计划再完美也没用。</li>
+            <li>最不能破的底线抽成 11 条铁律，全流程只引用编号、不重述，防止规则膨胀。</li>
+            <li>铁律 1 治「凭想象设计」、铁律 6 治「自己审自己还说通过」、铁律 9 治「把同事没提交的改动卷进来」。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 价值贡献 ============ -->
+  <section id="value">
+    <div class="sec-head">
+      <span class="no">03</span>
+      <h2>价值贡献</h2>
+      <p>它想解决的本质是一个「治理成本」问题。对使用者来说答案很直接——<b>提效</b>：你只管说一句话需求，分级、派活、挑模型、审查兜底全自动。下面四笔账，笔笔有出处。</p>
+    </div>
+
+    <!-- 四笔账 -->
+    <div class="dim-grid reveal" style="margin-bottom:var(--s6);">
+      <div class="dim v-know">
+        <span class="tag">第 1 笔 · 省认知</span>
+        <h4>不需要懂多 Agent 怎么干活</h4>
+        <ul>
+          <li>一句话入口：<code>/grill-power 优化一下首页加载</code>，剩下的事它自己安排——你看到的是一次结构化汇报，背后是整条流水线。</li>
+          <li>派几个 Agent、派谁、配什么模型，<b>全自动</b>；粗活用便宜快的模型、实现和审查才用强模型，<b>你不用替它挑</b>。</li>
+          <li>触及 DB schema / 协议 / 启动流程 / 迁移回滚 / 删除能力时<b>自动加载兜底</b>，不唤起也兜住高风险改动。</li>
+          <li>多端通用：iOS / Android / C++ / Flutter / RN / Web / Figma 还原。</li>
+        </ul>
+      </div>
+      <div class="dim v-token">
+        <span class="tag">第 2 笔 · 省 token</span>
+        <h4>主会话上下文不爆炸</h4>
+        <ul>
+          <li><b>渐进式加载</b>：低频规则「用到哪页翻哪页」，主文件实测减重 24%，顺跑路径占用明显下降。</li>
+          <li><b>薄回传</b>：explore 只回 <code>文件:行号</code>+一句事实；reader 回 ≤30 行摘要；reviewer 详报落盘、只回计数+路径——subagent 拿一手材料，交回来的只有结论和指针。</li>
+          <li>相比 spec 类重流程（如 openspec 的 propose → plan → archive 全文档链），Lite 档零落盘零 subagent，<b>定性更轻</b>（未做严格 A/B 计量）。</li>
+        </ul>
+      </div>
+      <div class="dim v-time">
+        <span class="tag">第 3 笔 · 省时间</span>
+        <h4>流程深度匹配风险，不一刀切</h4>
+        <ul>
+          <li>小事走 Lite：<b>几分钟交付</b>，零 subagent、不落 plan——一分钟的改动不再被拉成半小时。</li>
+          <li>大事走 Full：可证明独立的 task 才并行——<b>并行是单会话给不了的</b>（一个会话只有一条时间线）。</li>
+          <li>流程不再是所有改动都要交的「时间税」。</li>
+        </ul>
+      </div>
+      <div class="dim v-quality">
+        <span class="tag">第 4 笔 · 质量兜底</span>
+        <h4>确定性不靠自觉</h4>
+        <ul>
+          <li>Decision Gate 定需求、Plan Gate 审计划，<b>动手前先拦缺口</b>。</li>
+          <li>独立审查 + 复审闭环；审查降级必显式声明，<b>自审不装「独立审查通过」</b>——信任成本低。</li>
+          <li>实证见下：单次 Full 拦 5 缺口、抓 7 条、复审 6 修 0 回归。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Full 实战链路 -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <h3>质量兜底不是口号：一次完整 Full 流程的实证</h3>
+      <p class="desc">任务：应用持久化改造 + 数据格式 v1→v2 迁移 + 多入口共享单例，<strong class="hl-orange">跨 5 个模块</strong>。每个 Gate 和审查环节都真实拦到了东西：</p>
+      <div class="chainflow">
+        <div class="cf-step cf-gate">
+          <span class="cf-no">动手前 · Plan Gate</span>
+          <div class="cf-t">拦下 5 个缺口</div>
+          <div class="cf-s">如「并发/协议/性能」未写明「不适用」、命令映射没写死——漏掉就成了「该做而没做的专项」</div>
+        </div>
+        <span class="cf-arrow">→</span>
+        <div class="cf-step cf-find">
+          <span class="cf-no">实现后 · 统一审查</span>
+          <div class="cf-t">抓到 7 条（2 P1 + 5 P2）</div>
+          <div class="cf-s">备份逻辑写在 try 之外、迁移遇畸形数组抛 TypeError、序号脏数据算出 NaN、原子写残留 .tmp 等</div>
+        </div>
+        <span class="cf-arrow">→</span>
+        <div class="cf-step cf-pass">
+          <span class="cf-no">修复后 · 一次复审</span>
+          <div class="cf-t">6 条已修 · 0 新增问题</div>
+          <div class="cf-s">28 个用例全过、无回归；剩 1 条 P2（测试不清理临时目录）已记录未处理</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 自举案例 -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <h3>自举：用这套流程审它自己</h3>
+      <p class="desc" style="margin-top:var(--s2);">一次改动后，独立的异模型 reviewer 审出 <strong class="hl-red">5 个问题</strong>——其中一条是「coder 的降级链最后一档被误写成了主会话自审」。<strong class="hl-blue">规则文件里的逻辑错误，被按规则派出去的审查者抓了出来</strong>，全部修复后复审归零。流程能抓出流程自身的错误，是它能自洽运转的最硬证据。</p>
+    </div>
+
+    <!-- 可迁移原则 -->
+    <div class="card reveal">
+      <h3>就算不用它，这六条也值得带走</h3>
+      <p class="desc">工具无关的设计原则，在任何 AI 编码工具里都能自己搭一套：</p>
+      <div class="rules" style="margin-top:var(--s4);">
+        <div class="rule"><span class="num">01</span><span class="txt">给 AI 的流程<b>按风险分档</b>，别一套流程走天下。</span></div>
+        <div class="rule"><span class="num">02</span><span class="txt"><b>该派几个 Agent 由风险决定</b>，不是越多越好——小事自己干更快。</span></div>
+        <div class="rule"><span class="num">03</span><span class="txt">派活前把「职责/输入/输出/禁止/停止条件」<b>五槽契约组装齐</b>，缺一槽不派。</span></div>
+        <div class="rule"><span class="num">04</span><span class="txt"><b>自审 ≠ 独立审查</b>，重要改动找个「没参与」的模型挑错，并如实说明是自审还是他审。</span></div>
+        <div class="rule"><span class="num">05</span><span class="txt">subagent 的自报结果只作参考，<b>关键验证自己复跑一遍</b>。</span></div>
+        <div class="rule"><span class="num">06</span><span class="txt">低频规则<b>按需加载</b>，别每次对话都塞满上下文。</span></div>
+      </div>
+      <div class="rule-strip">诚实的边界：它不是银弹——根因未收束的系统性 bug 该走系统排查流程，需要 spec 沉淀的项目该走 spec 流程；且未做过「单会话 vs 多 Agent」的成本 A/B 对照，相关收益判断为定性结论。</div>
+    </div>
+  </section>
+
+  <!-- ============ 04 机制详解（附录） ============ -->
+  <section id="details">
+    <div class="sec-head">
+      <span class="no">04</span>
+      <h2>机制详解</h2>
+      <p>附录式参考：三档划分、四 agent、路由矩阵、降级链、双维度审查、铁律锚点 —— 每个机制都是「跑出来的坑」收敛出的设计决策。</p>
+    </div>
+
+    <!-- 4.1 三档划分 -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <h3>4.1 三档如何划分</h3>
+      <p class="desc">分级看<strong class="hl-red">「改错了会怎样」</strong>，而非「改了多少文件」。<strong class="hl-blue">任务数量不触发升档</strong>（铁律 8）；高风险不可逆操作不得低于 Full。</p>
+      <div class="table-scroll" style="margin-top:var(--s4);">
+        <table class="tier">
+          <thead>
+            <tr>
+              <th style="width:150px;">模式</th>
+              <th>进入条件</th>
+              <th>流程</th>
+              <th>落盘 / 审查</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="chip lite"><span class="dot" style="background:var(--lite)"></span>Lite</span></td>
+              <td>单文件/单函数 · 改法明确 · 低风险 · 无业务语义歧义</td>
+              <td class="arrow-chain">成功标准 → 核对事实 → 改动 → 验证 → 自审</td>
+              <td>不落 plan；主会话自审</td>
+            </tr>
+            <tr>
+              <td><span class="chip std"><span class="dot" style="background:var(--std)"></span>Standard</span></td>
+              <td>1~2 模块 · 无共享状态/双向依赖 · 有方案歧义 · 无高风险不可逆</td>
+              <td class="arrow-chain">探索 → grill → Decision Gate → 实现 → 独立审查</td>
+              <td>默认不落 plan；审查一次</td>
+            </tr>
+            <tr>
+              <td><span class="chip full"><span class="dot" style="background:var(--full)"></span>Full</span></td>
+              <td>跨2+模块+共享状态 / 跨3+ 或 <code>DB schema</code>·<code>协议</code>·<code>删除能力</code>·<code>迁移/回滚</code></td>
+              <td class="arrow-chain">完整探索 → grill → 方案确认 → 拍板 → plan/Plan Gate → 分组执行（coder 串/并实现）→ 统一 review → 复审</td>
+              <td>落一个 plan；统一审查 + 复审</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="caption">就高不就低；高风险不可逆操作不得低于 Full。「机械同构替换」是唯一的 Full→Standard 降级例外，须逐条核对四项条件。</p>
+    </div>
+
+    <!-- 4.2 四 agent -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <h3>4.2 四个 Agent 设计</h3>
+      <p class="desc">角色<strong class="hl-blue">靠创建、不靠预置类型</strong>。派发前按「组装骨架」<strong class="hl-orange">五槽</strong>（职责/输入/输出/禁止/停止条件）组装契约 prompt，<strong class="hl-red">任一缺失不派发</strong>。Lite 全程零 subagent。</p>
+      <div class="detail-grid" style="margin-top:var(--s4);">
+        <div class="card">
+          <div class="role-head"><span class="nm">explore</span><span class="badge">广度定位</span></div>
+          <dl class="field">
+            <dt>职责</dt><dd>按关键词/符号/模式定位相关文件与入口，判断相关性；不深读、不做方案判断。</dd>
+            <dt>触发判据</dt><dd>Standard/Full 探索阶段默认派。</dd>
+            <dt>降级路径</dt><dd>矩阵主选 → 原生 subagent 不 pin → 主会话 grep + ≤50 行切片。</dd>
+          </dl>
+        </div>
+        <div class="card">
+          <div class="role-head"><span class="nm">reader</span><span class="badge">精读理解</span></div>
+          <dl class="field">
+            <dt>职责</dt><dd>读指定文件/区间，提炼结构、约束、隐式依赖，返回结构化摘要（≤30 行）。</dd>
+            <dt>触发判据</dt><dd>explore 输出不足以确认实现、约束或隐藏复杂度时。</dd>
+            <dt>降级路径</dt><dd>矩阵主选 → 原生 subagent 不 pin → 主会话 grep + ≤50 行切片。</dd>
+          </dl>
+        </div>
+        <div class="card">
+          <div class="role-head"><span class="nm">coder</span><span class="badge">实现</span></div>
+          <dl class="field">
+            <dt>职责</dt><dd>按 task 在文件白名单内实现并做 task 级验证，越界即停报告。</dd>
+            <dt>触发判据</dt><dd>预估 &gt;5 文件 或 &gt;300 行，或预估不确定。</dd>
+            <dt>降级路径</dt><dd>矩阵主选 → codemaker run -m → 原生 subagent 不 pin → coder-fallback: main。</dd>
+          </dl>
+        </div>
+        <div class="card">
+          <div class="role-head"><span class="nm">reviewer</span><span class="badge">独立审查</span></div>
+          <dl class="field">
+            <dt>职责</dt><dd>只读审查需求覆盖、边界回归、入口/引用影响、验证证据；代码只读。</dd>
+            <dt>触发判据</dt><dd>实现完成后默认派（双维度：独立上下文 + 异模型）。</dd>
+            <dt>降级路径</dt><dd>矩阵主选 → codemaker run -m → 原生 subagent 不 pin → 主会话自审 + 显式声明。</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.3 路由矩阵 -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <h3>4.3 路由矩阵设计</h3>
+      <p class="desc">先探测 env 大类（<code>detect-harness.sh</code>），再按矩阵把四角色映射到本环境通道。路由已按环境拆成 4 个分片（<strong class="hl-blue">routing-&lt;env&gt;.md</strong>，按 env 只读一份）：claude-code / opencode / dsh / other。模型优先级：<strong class="hl-blue">EXTEND.md 用户偏好 &gt; 分片默认 &gt; 原生不 pin</strong>。</p>
+      <div class="table-scroll" style="margin-top:var(--s4);">
+        <table class="mat">
+          <thead>
+            <tr>
+              <th class="env">环境（判据）</th>
+              <th>explore</th>
+              <th>reader</th>
+              <th>coder</th>
+              <th class="review-col">reviewer ◆</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th class="sticky">claude-code</th><td>spawn haiku</td><td>spawn haiku</td><td>spawn sonnet</td><td class="review-col">spawn opus<br>（须回显异模型）</td></tr>
+            <tr><th class="sticky">DSH</th><td>subagent 无 pin</td><td>subagent 无 pin</td><td>subagent 主选<br>（workflow 备选）※</td><td class="review-col">workflow<br>（异模型 · 白名单 pin）</td></tr>
+            <tr><th class="sticky">opencode + OMO</th><td>explore</td><td>doc-reader</td><td>unspecified-high</td><td class="review-col">oracle<br>(gpt-5.6-terra)</td></tr>
+            <tr><th class="sticky">opencode plain</th><td>explore</td><td>explore（降级）</td><td>general</td><td class="review-col">codemaker run -m</td></tr>
+            <tr><th class="sticky">other</th><td>原生 不 pin</td><td>原生 不 pin</td><td>原生 不 pin</td><td class="review-col">codemaker run -m<br>（若可用）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="caption">※ DSH 行：v1.9.0 起 coder 主选为 subagent（原生派发可追问），workflow 降为备选（白名单 pin）；reviewer 仍经 workflow 的 agent(prompt,{model}) pin 白名单内异模型。白名单 ≠ 本机 codemaker model-list 全集。OMO 行：explore/reader/reviewer 走 subagent_type，coder 走 category。</p>
+    </div>
+
+    <!-- 4.4 降级链 -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <h3>4.4 降级链</h3>
+      <p class="desc">跨环境统一：主选通道<strong class="hl-orange">不可用 / 失败 / 超时</strong>时按序退化，<strong class="hl-red">逐档显式声明</strong>。explore/reader 链更短、不走 codemaker run -m。</p>
+      <div class="degrade-stack" style="margin-top:var(--s4);">
+
+        <!-- explore · reader -->
+        <div class="degrade-row reveal">
+          <div class="d-row-head">
+            <span class="d-name">explore · reader</span>
+            <span class="d-meta">3 档 · 链短</span>
+          </div>
+          <div class="d-steps d-3">
+            <div class="d-step d-start"><span class="d-no">L1</span><div class="d-txt">矩阵主选</div></div>
+            <span class="d-arrow">→</span>
+            <div class="d-step"><span class="d-no">L2</span><div class="d-txt">原生 subagent<br>不 pin</div></div>
+            <span class="d-arrow">→</span>
+            <div class="d-step d-end"><span class="d-no">L3</span><div class="d-txt">主会话 grep<br>≤50 行切片</div></div>
+          </div>
+          <div class="d-note">链短、不走 codemaker run -m；降级须显式声明（<strong class="hl-blue">不宣称 reader 精读</strong>）。</div>
+        </div>
+
+        <!-- coder -->
+        <div class="degrade-row reveal">
+          <div class="d-row-head">
+            <span class="d-name">coder</span>
+            <span class="d-meta">4 档</span>
+          </div>
+          <div class="d-steps d-4">
+            <div class="d-step d-start"><span class="d-no">L1</span><div class="d-txt">矩阵主选</div></div>
+            <span class="d-arrow">→</span>
+            <div class="d-step"><span class="d-no">L2</span><div class="d-txt">codemaker<br>run -m</div></div>
+            <span class="d-arrow">→</span>
+            <div class="d-step"><span class="d-no">L3</span><div class="d-txt">原生 subagent<br>不 pin</div></div>
+            <span class="d-arrow">→</span>
+            <div class="d-step d-end"><span class="d-no">L4</span><div class="d-txt">coder-fallback<br>: main</div></div>
+          </div>
+          <div class="d-note">链尾 = <code>coder-fallback: main</code>（主会话冻结白名单内串行实现）。</div>
+        </div>
+
+        <!-- reviewer -->
+        <div class="degrade-row rev reveal">
+          <div class="d-row-head">
+            <span class="d-name">reviewer</span>
+            <span class="d-meta">4 档 · 双维度退化</span>
+          </div>
+          <div class="d-steps d-4">
+            <div class="d-step d-start"><span class="d-no">L1</span><div class="d-txt">矩阵主选<br>（异模型）</div></div>
+            <span class="d-arrow">→</span>
+            <div class="d-step"><span class="d-no">L2</span><div class="d-txt">codemaker<br>run -m</div></div>
+            <span class="d-arrow">→</span>
+            <div class="d-step"><span class="d-no">L3</span><div class="d-txt">原生 subagent<br>不 pin</div></div>
+            <span class="d-arrow">→</span>
+            <div class="d-step d-end"><span class="d-no">L4</span><div class="d-txt">主会话自审<br>+ 显式声明</div></div>
+          </div>
+          <div class="d-note">双维度退化：先丢「异模型」保「独立上下文」，链尽 = 自审 + 双重声明，<strong class="hl-red">禁写「独立审查通过」</strong>（铁律 6）。</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 4.5 双维度审查 -->
+    <div class="card reveal" style="margin-bottom:var(--s6);">
+      <h3>4.5 双维度审查</h3>
+      <p class="desc">评价 reviewer 的<strong class="hl-orange">两个正交指标</strong>：<strong class="hl-blue">独立上下文</strong>（最低要求）+ <strong class="hl-orange">异模型</strong>（增强项）。一个不达标就沿降级链退化，<strong class="hl-red">退到哪级显式声明哪级</strong>。</p>
+      <div class="dim-grid" style="margin-top:var(--s4);">
+        <div class="dim min">
+          <span class="tag">最低要求</span>
+          <h4>独立上下文</h4>
+          <ul>
+            <li>reviewer 是<b>独立的 agent 会话</b>，不是主会话自己（隔离既有结论/偏见）。</li>
+            <li>算：原生 spawn / <code>workflow agent</code> / <code>codemaker run -m</code> / 同模型 subagent。</li>
+            <li>只有「<b>主会话自审</b>」不算。</li>
+          </ul>
+        </div>
+        <div class="dim enh">
+          <span class="tag">增强项</span>
+          <h4>异模型</h4>
+          <ul>
+            <li>reviewer 模型 <b>≠ 主会话模型 且 ≠ coder 模型</b>，交叉抵消单模型盲区。</li>
+            <li>须「<b>已验证</b>」：原生回显 effective model，或 <code>codemaker model-list</code> 解析 model ID。</li>
+            <li>碰撞（如 oracle = 主模型）时沿降级链换 <code>codemaker run -m</code>。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="rule-strip">任一维度降级都必须显式声明原因；退化顺序：先丢「异模型」保「独立上下文」，再丢「独立上下文」。链尽 = 主会话自审 + 双重声明，自审不得写成「独立审查通过」（铁律 6）。</div>
+    </div>
+
+    <!-- 4.6 铁律 -->
+    <div class="card reveal">
+      <h3>4.6 铁律锚点</h3>
+      <p class="desc">全流程生效，各阶段只引用编号、不重述。</p>
+      <div class="rules" style="margin-top:var(--s4);">
+        <div class="rule"><span class="num">01</span><span class="txt"><b>先有代码证据，再问决策</b>；不得没探索就设计。</span></div>
+        <div class="rule"><span class="num">02</span><span class="txt"><b>并发/状态机/多入口先答 Q1/Q2/Q3</b><span class="sub">Q1 合并路径消并发？ Q2 是否有权威入口改道？ Q3 删除历史能力会丢什么？</span></span></div>
+        <div class="rule"><span class="num">03</span><span class="txt">业务语义、删除能力、外部依赖无法确认<b>必须询问</b>；技术细节按现有模式决定。</span></div>
+        <div class="rule"><span class="num">04</span><span class="txt">每个决策<b>只确认一次</b>；低风险默认值直接采用并记录。</span></div>
+        <div class="rule"><span class="num">05</span><span class="txt">只改需求涉及内容；<b>不自动 commit / push / merge / 删除分支</b>。</span></div>
+        <div class="rule"><span class="num">06</span><span class="txt"><b>自审不得写成「独立审查通过」</b>；任一维度降级都显式声明原因。</span></div>
+        <div class="rule"><span class="num">07</span><span class="txt">「继续/嗯」只在按推荐方案执行且<b>无未决项</b>时才算确认；跳过 Grill 不跳过 Decision Gate。</span></div>
+        <div class="rule"><span class="num">08</span><span class="txt"><b>升档只看依赖、风险、影响面、可验证性</b>；任务数量不触发升档。</span></div>
+        <div class="rule"><span class="num">09</span><span class="txt">区分本次改动与外部未提交改动；<b>不 stash / reset / 覆盖</b>。</span></div>
+        <div class="rule"><span class="num">10</span><span class="txt">references <b>按触发点读取，禁止预加载</b>；冲突以本文为准。</span></div>
+        <div class="rule"><span class="num">11</span><span class="txt">Subagent <b>按角色路由</b>；Lite 零 subagent。</span></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>grill-power skill v1.9.0 · 介绍版 · 原生 HTML/CSS 绘制，无外部依赖、无贴图</span>
+    <span>内容依据：SKILL.md · blog/grill-power-public.md · references/roles.md · references/full.md</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // 滚动渐入：给带 .reveal 的元素按序进入
+  var items = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en, idx){
+        if(en.isIntersecting){
+          en.target.classList.add('in');
+          io.unobserve(en.target);
+        }
+      });
+    }, {threshold:.12, rootMargin:'0px 0px -8% 0px'});
+    items.forEach(function(el){ io.observe(el); });
+  } else {
+    items.forEach(function(el){ el.classList.add('in'); });
+  }
+})();
+
+// 深浅色切换
+(function(){
+  var btn = document.getElementById('themeToggle');
+  if(!btn) return;
+  btn.addEventListener('click', function(){
+    var cur = document.documentElement.getAttribute('data-theme');
+    var next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try{ localStorage.setItem('gp-theme', next); }catch(e){}
+  });
+})();
+
+// 字号档位（小/中/大）
+(function(){
+  var SIZE_KEY = 'gp-fontsize';
+  function apply(size){
+    if(size === 'medium'){
+      document.documentElement.removeAttribute('data-fontsize');
+    } else {
+      document.documentElement.setAttribute('data-fontsize', size);
+    }
+    document.querySelectorAll('.fsz-btn').forEach(function(b){
+      b.classList.toggle('is-active', b.getAttribute('data-fs') === size);
+    });
+    try{ localStorage.setItem(SIZE_KEY, size); }catch(e){}
+  }
+  // 恢复记录值（默认 medium，非法值回退 medium）
+  var saved = 'medium';
+  try{ saved = localStorage.getItem(SIZE_KEY) || 'medium'; }catch(e){}
+  if(['small','medium','large'].indexOf(saved) === -1){ saved = 'medium'; }
+  apply(saved);
+  document.querySelectorAll('.fsz-btn').forEach(function(b){
+    b.addEventListener('click', function(){ apply(b.getAttribute('data-fs')); });
+  });
+})();
+
+// 节点详情气泡
+(function(){
+  var TIPS = {
+    'judge': { tag:'入口', tagClass:'', title:'分级判定', body:'按 <b>依赖 · 风险 · 影响面 · 可验证性</b> 四维判定模式。判断存疑时<b>就高不就低</b>；高风险不可逆操作（DB schema / 协议兼容 / 删除能力 / 迁移回滚）不得低于 Full。任务数量本身不触发升档（铁律 8）。<br><br>需求涉及<b>新增公开可复用能力</b>（协议方法/公开 API/工具类/中间层）时，判定前先做两步筛查：<b>Q2 已有入口</b>（是否已有权威入口或方法组合可覆盖）+ <b>使用方</b>（能否说明首个调用方），命中则追加「▶ 需求存疑」行交用户裁定。' },
+    'sink':  { tag:'收尾', tagClass:'', title:'统一收尾 · 汇报', body:'汇报模式、改动文件、验证命令/步骤、预期结果、实际结果、未完成或降档项。无明确授权<b>不得 commit / push / merge / 删除分支</b>（铁律 5）。' },
+
+    'lite-success': { tag:'Lite', tagClass:'', title:'成功标准', body:'先写<b>一句成功标准</b>和最小改动路径，明确改完的验收边界，避免改飞。' },
+    'lite-fact':   { tag:'Lite', tagClass:'', title:'核对事实', body:'核对需求描述与代码事实：现状值/文件位置/行为与代码不符且会改变实现或验收时，<b>先说明冲突并询问</b>；纯过时描述（路径、旧值）按代码事实修正并在汇报说明。' },
+    'lite-edit':   { tag:'Lite', tagClass:'', title:'改动', body:'只改需求涉及的内容（铁律 5），主会话直接小步实现，全程<b>零 subagent</b>（铁律 11）。' },
+    'lite-verify': { tag:'Lite', tagClass:'', title:'验证', body:'运行可用测试；无测试则执行<b>可复现的静态/人工验证</b>。不得把未执行的验证写成已通过。' },
+    'lite-selfrev':{ tag:'Lite', tagClass:'', title:'主会话自审', body:'自审<b>需求覆盖、边界、引用/编译风险、改动范围</b>。若暴露根因未收束，停止 Lite 转 systematic-debugging。' },
+    'lite-report': { tag:'Lite', tagClass:'', title:'汇报', body:'汇报改动与验证结果，<b>询问是否 commit</b>（不自动提交）。' },
+
+    'std-explore': { tag:'Standard', tagClass:'', title:'探索', body:'按「派活触发表」派 explore 定位相关文件；不足时派 reader 精读结构化摘要。返回：涉及范围、关键入口事实（文件:行号）、约束依赖、隐藏复杂度、task 草案。' },
+    'std-grill':   { tag:'Standard', tagClass:'', title:'精简 grill', body:'仅对<b>会改变实现或验收</b>的决策提问，一批最多 <b>3 问</b>、每题带推荐和理由。只有答案互相依赖、高风险或用户要求时才一次一问。' },
+    'std-decision':{ tag:'Gate', tagClass:'', title:'Decision Gate（定需求）', body:'把待决定项集中成一张表<b>一次确认</b>：技术实现 AI 自决 / 业务依赖待用户定 / 低风险呈现默认采用。未答且影响范围的项保留为阻塞项，<b>不能开始实现</b>。' },
+    'std-escalate':{ tag:'警示', tagClass:'', title:'升 Full 检查', body:'收口后必须检查：跨 2+ 模块且共享状态/双向依赖、跨 3+ 模块、高风险操作、task 无法验证 —— 任一命中即停，先读 branches.md §4 再读 full.md，<b>不先实现再补 plan</b>。' },
+    'std-impl':    { tag:'Standard', tagClass:'', title:'实现', body:'实现前先把 task 草案固化为<b>轻量 task brief</b>（成功标准/文件白名单/决策状态/验证方式/审查策略五项）。按 coder 阈值：<b>≤5 文件且 ≤300 行主会话小步实现</b>，否则交 coder 角色（只改白名单，越界即停）。阈值只决定实现者，不触发升档。' },
+    'std-review':  { tag:'审查', tagClass:'', title:'独立审查', body:'优先独立 reviewer（<b>双维度</b>：独立上下文最低要求 + 异模型增强项），审查需求遗漏、边界回归、入口/引用影响、验证证据。不可用沿降级链退化并显式声明。' },
+    'std-report':  { tag:'Standard', tagClass:'', title:'汇报', body:'列出：审查策略、降级原因、覆盖范围、未覆盖专项、处理结论，以及验证命令/步骤、预期结果、实际结果、补验项。' },
+
+    'full-explore':{ tag:'Full', tagClass:'', title:'完整探索', body:'先派 <b>explore</b> 定位，输出不足以确认实现/约束时再<b>按需派 reader</b>（非两者同时派）。覆盖所有相关入口、测试/构建能力、平台约束和 task 草案。方案出口必须有：现状、最小方案、决策表、待确认清单。' },
+    'full-grill':  { tag:'Full', tagClass:'', title:'grill 方案确认', body:'沿设计树往下追，直到<b>不存在会改变实现或验收的未知项</b>。方案展示后是唯一转场：有阻塞项暂停等用户。' },
+    'full-decision':{ tag:'Gate', tagClass:'', title:'Decision Gate（用户拍板）', body:'方案默认一次集中确认。用户<b>未确认「走」前不得落 plan、写代码或进入执行</b>。「继续/嗯」仅在已说明按推荐方案执行且无未决项时算确认（铁律 7）。' },
+    'full-plan':   { tag:'Full', tagClass:'', title:'落 plan', body:'读取 writing-plan.md，落一个 <code>docs/superpowers/plans/YYYY-MM-DD-&lt;name&gt;.md</code>。含阶段枚举、决策表、待确认清单、文件结构、任务清单，每个 task 可独立验证。' },
+    'full-plangate':{ tag:'Gate', tagClass:'', title:'Plan Gate（审计划）', body:'审计划质量（需求覆盖 / 决策清仓 / 任务可执行 / 变更专项 / 验证真实性）。✅ 才能执行第一个 task；❌ <b>主会话修正后自审一次</b>（退回仅一次），涉及删除/迁移/协议/启动/回滚/数据一致性的任务退回后<b>不得自审放行，须交用户决定</b>；⚠️ 等用户决定。' },
+    'full-exec':   { tag:'Full', tagClass:'', title:'分组执行', body:'按依赖组让 <b>coder 角色并行实现</b>（可证明独立时），否则串行。串行实现者按 coder 阈值：≤5 文件且 ≤300 行主会话，否则 coder。主 agent 须<b>独立复跑关键验证命令</b>。' },
+    'full-review': { tag:'审查', tagClass:'', title:'统一 review', body:'所有 task 完成后<b>只启动一次统一 reviewer</b>，不按 task 单独审。检查跨文件/跨模块影响、需求覆盖、边界、验证证据及变更专项项。' },
+    'full-rereview':{ tag:'Full', tagClass:'', title:'一次复审 → 收尾', body:'主 agent 统一修复 reviewer 问题，整批<b>只复审一次</b>；仍不通过或范围扩大时暂停交用户。复审只传「上次问题清单 + 修复 diff」。' }
+  };
+
+  var bubble = document.createElement('div');
+  bubble.className = 'tip-bubble';
+  bubble.setAttribute('role','dialog');
+  bubble.setAttribute('aria-modal','false');
+  bubble.innerHTML = '<div class="tb-head"><span class="tb-title" id="tip-title"></span><button class="tb-close" aria-label="关闭">×</button></div><div class="tb-body" id="tip-body"></div><span class="arrow"></span>';
+  document.body.appendChild(bubble);
+  bubble.setAttribute('aria-labelledby','tip-title');
+  bubble.setAttribute('aria-describedby','tip-body');
+
+  var titleEl = bubble.querySelector('.tb-title');
+  var bodyEl = bubble.querySelector('.tb-body');
+  var arrowEl = bubble.querySelector('.arrow');
+
+  function close(){
+    bubble.classList.remove('show');
+    // 恢复焦点到触发节点
+    if(bubble._trigger){
+      try{ bubble._trigger.focus(); }catch(e){}
+    }
+    bubble._trigger = null;
+  }
+
+  function open(trigger){
+    var id = trigger.getAttribute('data-tip');
+    var tip = TIPS[id];
+    if(!tip) return;
+    titleEl.textContent = tip.title;
+    bodyEl.innerHTML = tip.body;
+    // position
+    var r = trigger.getBoundingClientRect();
+    bubble.classList.add('show');
+    // temporarily measure bubble size
+    var bw = bubble.offsetWidth, bh = bubble.offsetHeight;
+    // 水平：默认居中于触发点，边缘收进视口
+    var left = r.left + r.width/2 - bw/2;
+    left = Math.max(12, Math.min(left, window.innerWidth - bw - 12));
+    // 垂直：默认在节点下方；放不下则放上方；再不行就贴顶
+    var top = r.bottom + 10;
+    var arrowUp = true;
+    if(top + bh > window.innerHeight - 8){
+      top = r.top - bh - 10;
+      arrowUp = false;
+    }
+    top = Math.max(8, Math.min(top, window.innerHeight - bh - 8));
+    bubble.style.left = left + 'px';
+    bubble.style.top = top + 'px';
+    // 箭头位置：跟随触发点水平
+    var arrowLeft = r.left + r.width/2 - left - 6;
+    arrowLeft = Math.max(14, Math.min(arrowLeft, bw - 26));
+    if(arrowUp){
+      arrowEl.style.top = '-7px'; arrowEl.style.bottom = 'auto';
+    } else {
+      arrowEl.style.bottom = '-7px'; arrowEl.style.top = 'auto';
+    }
+    arrowEl.style.left = arrowLeft + 'px';
+    bubble._trigger = trigger;
+    // 焦点移入关闭按钮
+    setTimeout(function(){ try{ bubble.querySelector('.tb-close').focus(); }catch(e){} }, 0);
+  }
+
+  function toggle(trigger){
+    if(bubble._trigger === trigger && bubble.classList.contains('show')){ close(); }
+    else { open(trigger); }
+  }
+
+  // 绑定所有 data-tip 节点
+  document.querySelectorAll('[data-tip]').forEach(function(el){
+    if(!el.closest('.flow')) return; // 仅流程图内
+    // 键盘可达性：可聚焦 + 语义 + Enter/Space 触发
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('role', 'button');
+    el.addEventListener('click', function(e){ e.stopPropagation(); toggle(this); });
+    el.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); e.stopPropagation(); toggle(this); }
+    });
+  });
+
+  // 关闭按钮（可聚焦）
+  var closeBtn = bubble.querySelector('.tb-close');
+  closeBtn.setAttribute('tabindex', '0');
+  closeBtn.addEventListener('click', function(e){ e.stopPropagation(); close(); });
+  closeBtn.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); close(); }
+  });
+  // 点击外部关闭
+  document.addEventListener('click', function(e){
+    if(!bubble.contains(e.target) && !(e.target.closest && e.target.closest('[data-tip]'))) close();
+  });
+  window.addEventListener('scroll', close, {passive:true});
+  window.addEventListener('resize', close);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
+})();
+</script>
+</body>
+</html>
