@@ -640,6 +640,7 @@ html{scroll-behavior:smooth;}
     <a href="#inno-5">Loop 设计</a>
   </div>
   <a href="#value"><span class="n">03</span>价值贡献</a>
+  <a href="#install"><span class="n">04</span>使用安装</a>
 </nav>
 
 <div class="top-toolbar">
@@ -1148,11 +1149,17 @@ html{scroll-behavior:smooth;}
       <div class="rule-strip">诚实的边界：它不是银弹——根因未收束的系统性 bug 该走系统排查流程，需要 spec 沉淀的项目该走 spec 流程；上述实战数据来自组内真实交付的统计观察，非严格双盲 A/B 实验。</div>
     </div>
 
-    <!-- 快速获取与安装 -->
-    <div class="card reveal" style="margin-top:var(--s6);">
-      <h3>立即使用 · 获取与安装</h3>
-      <p class="desc">支持 Claude Code / OpenCode / CodeMaker / Codex 等主流 Agent 环境，提供内网与公网双通道：</p>
-      <div class="versus" style="margin-top:var(--s4);">
+  </section>
+
+  <!-- ============ 04 使用安装 ============ -->
+  <section id="install">
+    <div class="sec-head">
+      <span class="no">04</span>
+      <h2>使用安装</h2>
+      <p>支持 Claude Code / OpenCode / CodeMaker / Codex 等主流 Agent 环境，提供内网与公网双通道，一行命令接入后输入 <code>/grill-power &lt;一句话需求&gt;</code> 即可启动。</p>
+    </div>
+    <div class="card reveal">
+      <div class="versus">
         <div class="vs-card" style="border-color:var(--std-border);background:var(--std-tint);">
           <span class="vs-tag" style="color:var(--std-text);">通道 ① · 网易内网（Skills Hub · 92分 S级）</span>
           <h4>Skills Hub 官方仓库</h4>
@@ -1649,6 +1656,9 @@ html{scroll-behavior:smooth;}
       var r = t.el.getBoundingClientRect();
       if(r.top <= y && r.bottom > y) current = t;
     });
+    if((window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 40) && targets.length){
+      current = targets[targets.length - 1];
+    }
     links.forEach(function(a){ a.classList.remove('is-active'); });
     if(current){
       current.a.classList.add('is-active');
